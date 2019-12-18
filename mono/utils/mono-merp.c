@@ -144,7 +144,8 @@ typedef enum
 	MERP_EXC_SIGFPE = 7 ,
 	MERP_EXC_SIGTRAP = 8,
 	MERP_EXC_SIGKILL = 9,
-	MERP_EXC_HANG  = 10
+	MERP_EXC_HANG  = 10,
+	MERP_EXC_SIGEMT = 11
 } MERPExcType;
 
 typedef struct {
@@ -261,6 +262,8 @@ get_merp_exctype (MERPExcType exc)
 			return "0x04000000";
 		case MERP_EXC_HANG: 
 			return "0x02000000";
+		case MERP_EXC_SIGEMT:
+			return "0xdeadbeef"; // What do I return here?
 		case MERP_EXC_NONE:
 			// Exception type documented as optional, not optional
 			g_assert_not_reached ();
@@ -272,21 +275,30 @@ get_merp_exctype (MERPExcType exc)
 static MERPExcType
 parse_exception_type (const char *signal)
 {
-	if (!strcmp (signal, "SIGSEGV"))
+	if (!strcmp (signal, "segv"))
 		return MERP_EXC_SIGSEGV;
 
-	if (!strcmp (signal, "SIGFPE"))
+	if (!strcmp (signal, "fpe"))
 		return MERP_EXC_SIGFPE;
 
-	if (!strcmp (signal, "SIGILL"))
+	if (!strcmp (signal, "ill"))
 		return MERP_EXC_SIGILL;
 
-	if (!strcmp (signal, "SIGABRT"))
+	if (!strcmp (signal, "abrt"))
 		return MERP_EXC_SIGABRT;
+
+	if (!strcmp (signal, "trap"))
+		return MERP_EXC_SIGTRAP;
+
+	if (!strcmp (signal, "sys"))
+		return MERP_EXC_SIGSYS;
+
+	if (!strcmp (signal, "emt"))
+		return MERP_EXC_SIGEMT;
 
 	// Force quit == hang?
 	// We need a default for this
-	if (!strcmp (signal, "SIGTERM"))
+	if (!strcmp (signal, "term"))
 		return MERP_EXC_HANG;
 
 	// FIXME: There are no other such signal
